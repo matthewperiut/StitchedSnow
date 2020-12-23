@@ -1,0 +1,4 @@
+{
+  "text.autoconfig.stitchedsnow.option.snowAccumulationLimit": "How many layers of snow are allowed to accumulate",
+  "text.autoconfig.stitchedsnow.option.chanceToAccumulateSnow": "The chance in 1/x for the snow to accumulate."
+}

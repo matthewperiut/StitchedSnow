@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "stitchedsnow",
+  "version": "${version}",
+  "name": "Stiched Snow",
+  "description": "",
+  "authors": [
+    "StrikerRocker"
+  ],
+  "license": "GNU General Public License v2.0",
+  "icon": "assets/stitchedsnow/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.strikerrocker.StitchedSnow"
+    ],
+    "modmenu": [
+      "io.github.strikerrocker.ModMenuConfig"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  }
+}
