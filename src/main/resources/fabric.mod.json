@@ -3,9 +3,10 @@
   "id": "stitchedsnow",
   "version": "${version}",
   "name": "Stiched Snow",
-  "description": "",
+  "description": "Adds snow layering over time",
   "authors": [
-    "StrikerRocker"
+    "StrikerRocker",
+	"Slainlight"
   ],
   "license": "GNU General Public License v2.0",
   "icon": "assets/stitchedsnow/icon.png",
