@@ -1,7 +1,7 @@
 package io.github.strikerrocker;
 
-import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
-import me.sargunvohra.mcmods.autoconfig1u.serializer.Toml4jConfigSerializer;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
@@ -10,11 +10,11 @@ import java.lang.reflect.Method;
 
 public class StitchedSnow implements ModInitializer {
 
-    public static Config config;
+    public static ConfigModInfo config;
 
     static {
-        AutoConfig.register(Config.class, Toml4jConfigSerializer::new);
-        config = AutoConfig.getConfigHolder(Config.class).getConfig();
+        AutoConfig.register(ConfigModInfo.class, Toml4jConfigSerializer::new);
+        config = AutoConfig.getConfigHolder(ConfigModInfo.class).getConfig();
     }
 
     public TickHandler tickHandler;
