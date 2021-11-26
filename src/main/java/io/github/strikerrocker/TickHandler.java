@@ -42,7 +42,7 @@ public class TickHandler implements ServerTickEvents.StartWorldTick {
                             //Check if block at position is a snow layer block
                             if (world.getBlockState(pos1).getBlock() instanceof SnowBlock) {
                                 //Check if valid Y, correct light, and correct temp for snow formation
-                                if (pos1.getY() >= 0 && pos1.getY() < 256 && world.getLightLevel(LightType.BLOCK, pos1) < 10 && world.getBiome(pos1).getTemperature(pos1) < 0.15F) {
+                                if (pos1.getY() >= 0 && pos1.getY() < 256 && world.getLightLevel(LightType.BLOCK, pos1) < 10 && !world.getBiome(pos1).doesNotSnow(pos1)) {
                                     //Calculate mean surrounding block height
                                     int height = world.getBlockState(pos1).get(SnowBlock.LAYERS);
                                     if (height == 8) return;
