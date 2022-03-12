@@ -1,5 +1,6 @@
 package io.github.strikerrocker;
 
+import io.github.strikerrocker.mixin.ThreadedAnvilChunkStorageAccessor;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -11,25 +12,18 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.LightType;
 import net.minecraft.world.chunk.Chunk;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TickHandler implements ServerTickEvents.StartWorldTick {
-    Method getChunkHolder;
-
-    public TickHandler(Method getChunkHolder) {
-        this.getChunkHolder = getChunkHolder;
-    }
 
     @Override
     public void onStartTick(ServerWorld world) {
         if (world != null) {
             if (world.isRaining()) {
                 try {
-                    getChunkHolder.setAccessible(true);
-                    @SuppressWarnings("unchecked")
-                    Iterable<ChunkHolder> chunkSet = (Iterable<ChunkHolder>) getChunkHolder.invoke(world.getChunkManager().threadedAnvilChunkStorage);
+                    ThreadedAnvilChunkStorageAccessor threadedAnvilChunkStorageAccessor = (ThreadedAnvilChunkStorageAccessor) world.getChunkManager().threadedAnvilChunkStorage;
+                    Iterable<ChunkHolder> chunkSet = threadedAnvilChunkStorageAccessor.getEntryIterator();
                     for (ChunkHolder holder : chunkSet) {
                         Chunk chunk = holder.getCurrentChunk();
                         if (chunk == null || !world.getChunkManager().isChunkLoaded(chunk.getPos().x, chunk.getPos().z)) {
@@ -42,7 +36,8 @@ public class TickHandler implements ServerTickEvents.StartWorldTick {
                             //Check if block at position is a snow layer block
                             if (world.getBlockState(pos1).getBlock() instanceof SnowBlock) {
                                 //Check if valid Y, correct light, and correct temp for snow formation
-                                if (pos1.getY() >= 0 && pos1.getY() < 256 && world.getLightLevel(LightType.BLOCK, pos1) < 10 && !world.getBiome(pos1).doesNotSnow(pos1)) {
+
+                                if (pos1.getY() >= 0 && pos1.getY() < 256 && world.getLightLevel(LightType.BLOCK, pos1) < 10 && !world.getBiome(pos1).value().doesNotSnow(pos1)) {
                                     //Calculate mean surrounding block height
                                     int height = world.getBlockState(pos1).get(SnowBlock.LAYERS);
                                     if (height == 8) return;

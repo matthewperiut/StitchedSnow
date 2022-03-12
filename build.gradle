@@ -15,6 +15,9 @@ repositories {
 	maven { url "https://maven.shedaniel.me" } //rei
 }
 
+loom {
+	accessWidenerPath = file("src/main/resources/stitchedsnow.accesswidener")
+}
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
