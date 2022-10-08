@@ -1,29 +1,34 @@
 {
-  "schemaVersion": 1,
-  "id": "stitchedsnow",
-  "version": "${version}",
-  "name": "Stiched Snow",
-  "description": "Adds snow layering over time",
-  "authors": [
-    "StrikerRocker",
-	"Slainlight"
-  ],
-  "license": "GNU General Public License v2.0",
-  "icon": "assets/stitchedsnow/icon.png",
-  "environment": "*",
-  "entrypoints": {
-    "main": [
-      "io.github.strikerrocker.StitchedSnow"
+    "schemaVersion": 1,
+    "id":            "stitchedsnow",
+    "version":       "${version}",
+    "name":          "Stiched Snow",
+    "description":   "Adds snow layering over time",
+    "authors":       [
+        "StrikerRocker",
+        "Slainlight",
+        "byquanton"
     ],
-    "modmenu": [
-      "io.github.strikerrocker.ModMenuConfig"
-    ]
-  },
-  "depends": {
-    "fabricloader": ">=0.7.4",
-    "fabric": "*",
-    "minecraft": "1.18.x",
-    "java": ">=17",
-    "cloth-config2": ">=6.0"
-  }
+    "license":       "MIT",
+    "icon":          "assets/stitchedsnow/icon.png",
+    "environment":   "*",
+    "entrypoints":   {
+        "main":    [
+            "io.github.strikerrocker.StitchedSnow"
+        ],
+        "modmenu": [
+            "io.github.strikerrocker.ModMenuConfig"
+        ]
+    },
+    "accessWidener": "stitchedsnow.accesswidener",
+    "mixins":        [
+        "stitchedsnow.mixins.json"
+    ],
+    "depends":       {
+        "fabricloader":  ">=0.7.4",
+        "fabric":        "*",
+        "minecraft":     "1.19.2",
+        "java":          ">=17",
+        "cloth-config2": ">=8.0"
+    }
 }
