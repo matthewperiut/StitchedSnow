@@ -46,6 +46,9 @@ public abstract class ServerWorldMixin extends World {
             )
     )
     public void tickChunk(WorldChunk chunk, int randomTickSpeed, CallbackInfo ci) {
+        if (!this.isRaining())
+            return; // Don't do snow calculation if we're not raining
+        
         for (int i = 0; i < StitchedSnow.config.accumulationsPerChunkPerTick; i++) {
             accumulateSnowLayers(chunk);
         }
@@ -74,55 +77,58 @@ public abstract class ServerWorldMixin extends World {
                                           getRandomPosInChunk(chunkX, 0, chunkZ, 15));
             
             Biome biome = this.getBiome(pos).value();
-            if (biome.canSetSnow(this, pos)) {
-                // Calculate mean surrounding block height
-                BlockState state = getBlockState(pos);
-                int height;
-                
-                if (state.isOf(Blocks.SNOW)) {
-                    height = state.get(SnowBlock.LAYERS);
-                } else if (state.isOf(Blocks.AIR)) {
-                    height = 0;
-                } else {
-                    return;
-                }
-                
-                int pHeight = height + 8 * (getBlockState(pos.down()).isOf(Blocks.SNOW_BLOCK) ? 1 : 0);
-                
-                if (height == StitchedSnow.config.snowAccumulationLimit)
-                    return;
-                
-                if (height == SnowBlock.MAX_LAYERS) {
-                    setBlockState(pos, Blocks.SNOW_BLOCK.getDefaultState());
-                    pos = pos.up();
-                    state = getBlockState(pos);
-                    height = 0;
-                }
-                
-                int surroundingsSnowLevel = 0;
-                
-                // Check for blocks on the side (in star shape)
-                surroundingsSnowLevel += computeSnowLevel(pos.north());
-                surroundingsSnowLevel += computeSnowLevel(pos.north().east());
-                surroundingsSnowLevel += computeSnowLevel(pos.north().west());
-                surroundingsSnowLevel += computeSnowLevel(pos.south());
-                surroundingsSnowLevel += computeSnowLevel(pos.south().east());
-                surroundingsSnowLevel += computeSnowLevel(pos.south().west());
-                surroundingsSnowLevel += computeSnowLevel(pos.east());
-                surroundingsSnowLevel += computeSnowLevel(pos.west());
-                
-                // finely tuned formula for weight of surroundings
-                float surroundings = ((float) surroundingsSnowLevel - 2) / 8 - (pHeight) * 0.045f;
-                
-                // Done calculating surroundings
-                
-                // finely tuned weight formula
-                float weight = ((surroundings - height)) + 0.1f / (pHeight * pHeight * pHeight);
-                
-                if (weight >= random.nextFloat()) {
-                    // Add Snow layer!
-                    setBlockState(pos, Blocks.SNOW.getDefaultState().with(SnowBlock.LAYERS, Math.min(height + 1, SnowBlock.MAX_LAYERS)));
-                }
+            
+            if (!biome.canSetSnow(this, pos)) { // Return if we can't set snow
+                return;
+            }
+            
+            // Calculate mean surrounding block height
+            BlockState state = getBlockState(pos);
+            int height;
+            
+            if (state.isOf(Blocks.SNOW)) {
+                height = state.get(SnowBlock.LAYERS);
+            } else if (state.isOf(Blocks.AIR)) {
+                height = 0;
+            } else {
+                return;
+            }
+            
+            int pHeight = height + 8 * (getBlockState(pos.down()).isOf(Blocks.SNOW_BLOCK) ? 1 : 0);
+            
+            if (height == StitchedSnow.config.snowAccumulationLimit)
+                return;
+            
+            if (height == SnowBlock.MAX_LAYERS) {
+                setBlockState(pos, Blocks.SNOW_BLOCK.getDefaultState());
+                pos = pos.up();
+                state = getBlockState(pos);
+                height = 0;
+            }
+            
+            int surroundingsSnowLevel = 0;
+            
+            // Check for blocks on the side (in star shape)
+            surroundingsSnowLevel += computeSnowLevel(pos.north());
+            surroundingsSnowLevel += computeSnowLevel(pos.north().east());
+            surroundingsSnowLevel += computeSnowLevel(pos.north().west());
+            surroundingsSnowLevel += computeSnowLevel(pos.south());
+            surroundingsSnowLevel += computeSnowLevel(pos.south().east());
+            surroundingsSnowLevel += computeSnowLevel(pos.south().west());
+            surroundingsSnowLevel += computeSnowLevel(pos.east());
+            surroundingsSnowLevel += computeSnowLevel(pos.west());
+            
+            // finely tuned formula for weight of surroundings
+            float surroundings = ((float) surroundingsSnowLevel - 2) / 8 - (pHeight) * 0.045f;
+            
+            // Done calculating surroundings
+            
+            // finely tuned weight formula
+            float weight = ((surroundings - height)) + 0.1f / (pHeight * pHeight * pHeight);
+            
+            if (weight >= random.nextFloat()) {
+                // Add Snow layer!
+                setBlockState(pos, Blocks.SNOW.getDefaultState().with(SnowBlock.LAYERS, Math.min(height + 1, SnowBlock.MAX_LAYERS)));
             }
         }
     }
