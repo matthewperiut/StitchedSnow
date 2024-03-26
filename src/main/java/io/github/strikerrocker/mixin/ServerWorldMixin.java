@@ -64,14 +64,14 @@ public abstract class ServerWorldMixin extends World {
     }
 
     @Redirect(
-            method = "tickChunk",
+            method = "tickIceAndSnow",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/biome/Biome;canSetSnow(Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;)Z",
                     ordinal = 0
             )
     )
-    private boolean setBlockState(Biome instance, WorldView worldview, BlockPos blockPos) {
+    private boolean canSetSnow(Biome instance, WorldView worldview, BlockPos blockPos) {
         // Cancel vanilla snow algorithm all together, but still allow the precipitation tick to happen
         return false;
     }
