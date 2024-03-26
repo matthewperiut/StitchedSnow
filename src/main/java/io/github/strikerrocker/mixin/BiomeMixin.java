@@ -16,20 +16,21 @@ import org.spongepowered.asm.mixin.Shadow;
 public abstract class BiomeMixin {
     @Shadow
     public abstract boolean doesNotSnow(BlockPos pos);
-    
+
     /**
      * @author solonovamax
      * @reason Overwritten to support multiple snow layers
      */
     @Overwrite
     public boolean canSetSnow(WorldView world, BlockPos pos) {
+        // I don't think we changed this at all? Why is this method overwritten?
         if (!this.doesNotSnow(pos)) {
             if (pos.getY() >= world.getBottomY() && pos.getY() < world.getTopY() && world.getLightLevel(LightType.BLOCK, pos) < 10) {
                 BlockState blockState = world.getBlockState(pos);
                 return (blockState.isAir() || blockState.isOf(Blocks.SNOW)) && Blocks.SNOW.getDefaultState().canPlaceAt(world, pos);
             }
         }
-        
+
         return false;
     }
 }
