@@ -17,7 +17,7 @@ repositories {
 }
 
 loom {
-	accessWidenerPath = file("src/main/resources/stitchedsnow.accesswidener")
+	// accessWidenerPath = file("src/main/resources/stitchedsnow.accesswidener")
 }
 
 dependencies {

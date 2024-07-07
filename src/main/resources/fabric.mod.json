@@ -21,7 +21,6 @@
             "io.github.strikerrocker.ModMenuConfig"
         ]
     },
-    "accessWidener": "stitchedsnow.accesswidener",
     "mixins":        [
         "stitchedsnow.mixins.json"
     ],
