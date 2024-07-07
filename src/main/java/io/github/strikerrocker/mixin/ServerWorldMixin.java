@@ -1,6 +1,7 @@
 package io.github.strikerrocker.mixin;
 
 
+import io.github.strikerrocker.SnowUtility;
 import io.github.strikerrocker.StitchedSnow;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -27,6 +28,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.Supplier;
+
+import static io.github.strikerrocker.SnowUtility.computeSnowLevel;
 
 
 @Mixin(ServerWorld.class)
@@ -119,14 +122,14 @@ public abstract class ServerWorldMixin extends World {
             int localSnowLevel = 0;
 
             // Check for blocks on the side (in star shape)
-            localSnowLevel += computeSnowLevel(pos.north());
-            localSnowLevel += computeSnowLevel(pos.north().east());
-            localSnowLevel += computeSnowLevel(pos.north().west());
-            localSnowLevel += computeSnowLevel(pos.south());
-            localSnowLevel += computeSnowLevel(pos.south().east());
-            localSnowLevel += computeSnowLevel(pos.south().west());
-            localSnowLevel += computeSnowLevel(pos.east());
-            localSnowLevel += computeSnowLevel(pos.west());
+            localSnowLevel += computeSnowLevel(this, pos.north());
+            localSnowLevel += computeSnowLevel(this, pos.north().east());
+            localSnowLevel += computeSnowLevel(this, pos.north().west());
+            localSnowLevel += computeSnowLevel(this, pos.south());
+            localSnowLevel += computeSnowLevel(this, pos.south().east());
+            localSnowLevel += computeSnowLevel(this, pos.south().west());
+            localSnowLevel += computeSnowLevel(this, pos.east());
+            localSnowLevel += computeSnowLevel(this, pos.west());
 
             // finely tuned formula for weight of surroundings
             float surroundings = ((float) localSnowLevel - 2) / 8 - (pHeight) * 0.045f;
@@ -141,18 +144,5 @@ public abstract class ServerWorldMixin extends World {
                 setBlockState(pos, Blocks.SNOW.getDefaultState().with(SnowBlock.LAYERS, Math.min(height + 1, SnowBlock.MAX_LAYERS)));
             }
         }
-    }
-
-    @Unique
-    private int computeSnowLevel(BlockPos pos) {
-        BlockState state = getBlockState(pos);
-        if (state.isOf(Blocks.SNOW))
-            return state.get(SnowBlock.LAYERS);
-        else if (state.isOf(Blocks.SNOW_BLOCK))
-            return 10;
-        else if (state.isSolidBlock(this, pos))
-            return SnowBlock.MAX_LAYERS;
-        else
-            return 0;
     }
 }
