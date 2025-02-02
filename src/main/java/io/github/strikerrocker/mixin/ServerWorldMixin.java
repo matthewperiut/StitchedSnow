@@ -2,6 +2,7 @@ package io.github.strikerrocker.mixin;
 
 
 import io.github.strikerrocker.StitchedSnow;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SnowBlock;
@@ -11,6 +12,8 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.MutableWorldProperties;
 import net.minecraft.world.World;
@@ -18,6 +21,7 @@ import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.dimension.DimensionType;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -100,13 +104,15 @@ public abstract class ServerWorldMixin extends World {
             else
                 return;
 
-            int pHeight = height + 8 * (getBlockState(pos.down()).isOf(Blocks.SNOW_BLOCK) ? 1 : 0);
+            BlockState stateBelow = getBlockState(pos.down());
+            boolean solidSnowBelow = stateBelow.isOf(Blocks.SNOW_BLOCK) ||
+                                     (stateBelow.isOf(Blocks.SNOW) && state.get(SnowBlock.LAYERS) == SnowBlock.MAX_LAYERS);
+            int pHeight = height + 8 * (solidSnowBelow ? 1 : 0);
 
-            if (height == StitchedSnow.config.snowAccumulationLimit)
+            if (height > StitchedSnow.config.snowAccumulationLimit)
                 return;
 
             if (height == SnowBlock.MAX_LAYERS) {
-                setBlockState(pos, Blocks.SNOW_BLOCK.getDefaultState());
                 pos = pos.up();
                 state = getBlockState(pos);
                 height = 0;
@@ -115,14 +121,22 @@ public abstract class ServerWorldMixin extends World {
             int localSnowLevel = 0;
 
             // Check for blocks on the side (in star shape)
-            localSnowLevel += computeSnowLevel(pos.north());
-            localSnowLevel += computeSnowLevel(pos.north().east());
-            localSnowLevel += computeSnowLevel(pos.north().west());
-            localSnowLevel += computeSnowLevel(pos.south());
-            localSnowLevel += computeSnowLevel(pos.south().east());
-            localSnowLevel += computeSnowLevel(pos.south().west());
-            localSnowLevel += computeSnowLevel(pos.east());
-            localSnowLevel += computeSnowLevel(pos.west());
+            localSnowLevel += computeSnowLevel(pos.north(), Direction.NORTH.getOpposite());
+            localSnowLevel += computeSnowLevel(pos.north().up(), null);
+            localSnowLevel += computeSnowLevel(pos.north().east(), null);
+            localSnowLevel += computeSnowLevel(pos.north().west(), null);
+            localSnowLevel += computeSnowLevel(pos.south(), Direction.SOUTH.getOpposite());
+            localSnowLevel += computeSnowLevel(pos.south().up(), null);
+            localSnowLevel += computeSnowLevel(pos.south().east(), null);
+            localSnowLevel += computeSnowLevel(pos.south().west(), null);
+            localSnowLevel += computeSnowLevel(pos.east(), Direction.EAST.getOpposite());
+            localSnowLevel += computeSnowLevel(pos.east().up(), null);
+            localSnowLevel += computeSnowLevel(pos.west(), Direction.WEST.getOpposite());
+            localSnowLevel += computeSnowLevel(pos.west().up(), null);
+            localSnowLevel -= getBlockState(pos.north().down()).isOf(Blocks.POWDER_SNOW) ? 10 : 0;
+            localSnowLevel -= getBlockState(pos.south().down()).isOf(Blocks.POWDER_SNOW) ? 10 : 0;
+            localSnowLevel -= getBlockState(pos.east().down()).isOf(Blocks.POWDER_SNOW) ? 10 : 0;
+            localSnowLevel -= getBlockState(pos.west().down()).isOf(Blocks.POWDER_SNOW) ? 10 : 0;
 
             // finely tuned formula for weight of surroundings
             float surroundings = ((float) localSnowLevel - 2) / 8 - (pHeight) * 0.045f;
@@ -134,21 +148,32 @@ public abstract class ServerWorldMixin extends World {
 
             if (weight >= this.random.nextFloat()) {
                 // Add Snow layer!
-                setBlockState(pos, Blocks.SNOW.getDefaultState().with(SnowBlock.LAYERS, Math.min(height + 1, SnowBlock.MAX_LAYERS)));
+                BlockState updatedState = Blocks.SNOW.getDefaultState()
+                                                     .with(SnowBlock.LAYERS, Math.min(height + 1, SnowBlock.MAX_LAYERS));
+                Block.pushEntitiesUpBeforeBlockChange(state, updatedState, this, pos);
+                StitchedSnow.setFabricSeasonsMeltable(pos);
+                setBlockState(pos, updatedState);
             }
         }
     }
 
     @Unique
-    private int computeSnowLevel(BlockPos pos) {
+    private int computeSnowLevel(BlockPos pos, @Nullable Direction direction) {
         BlockState state = getBlockState(pos);
-        if (state.isOf(Blocks.SNOW))
-            return state.get(SnowBlock.LAYERS);
-        else if (state.isOf(Blocks.SNOW_BLOCK))
+        boolean maxLayersOrSolid = state.isOf(Blocks.SNOW_BLOCK) ||
+                                   state.isOf(Blocks.POWDER_SNOW) ||
+                                   state.isSolidBlock(this, pos) ||
+                                   state.isOf(Blocks.SNOW) && state.get(SnowBlock.LAYERS) == SnowBlock.MAX_LAYERS;
+        if (maxLayersOrSolid)
             return 10;
-        else if (state.isSolidBlock(this, pos))
-            return SnowBlock.MAX_LAYERS;
-        else
-            return 0;
+        else if (state.isOf(Blocks.SNOW))
+            return state.get(SnowBlock.LAYERS);
+        else if (direction != null) {
+            VoxelShape shape = state.getCollisionShape(this, pos);
+            if (Block.isFaceFullSquare(shape, direction))
+                return 10;
+            else
+                return 0;
+        } else return 0;
     }
 }

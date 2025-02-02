@@ -34,6 +34,8 @@ dependencies {
 	//modImplementation "me.sargunvohra.mcmods:autoconfig1u:${project.auto_config_version}"
 	//include "me.sargunvohra.mcmods:autoconfig1u:${project.auto_config_version}"
 	modImplementation "com.terraformersmc:modmenu:${project.mod_menu_version}"
+	modCompileOnly "io.github.lucaargolo:fabric-seasons:${project.seasons_version}"
+	// modRuntimeOnly "io.github.lucaargolo:fabric-seasons:${project.seasons_version}"
 }
 
 processResources {
