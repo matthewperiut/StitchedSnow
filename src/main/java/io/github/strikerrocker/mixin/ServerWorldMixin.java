@@ -1,6 +1,5 @@
 package io.github.strikerrocker.mixin;
 
-
 import io.github.strikerrocker.StitchedSnow;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -29,7 +28,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin extends World {
     protected ServerWorldMixin(
@@ -49,7 +47,7 @@ public abstract class ServerWorldMixin extends World {
             method = "tickChunk",
             at = @At(
                     value = "INVOKE_STRING",
-                    target = "Lnet/minecraft/util/profiler/Profiler;swap(Ljava/lang/String;)V",
+                    target = "Lnet/minecraft/util/profiler/Profiler;push(Ljava/lang/String;)V",
                     args = "ldc=iceandsnow",
                     shift = At.Shift.AFTER
             )
@@ -149,7 +147,7 @@ public abstract class ServerWorldMixin extends World {
             if (weight >= this.random.nextFloat()) {
                 // Add Snow layer!
                 BlockState updatedState = Blocks.SNOW.getDefaultState()
-                                                     .with(SnowBlock.LAYERS, Math.min(height + 1, SnowBlock.MAX_LAYERS));
+                        .with(SnowBlock.LAYERS, Math.min(height + 1, SnowBlock.MAX_LAYERS));
                 Block.pushEntitiesUpBeforeBlockChange(state, updatedState, this, pos);
                 StitchedSnow.setFabricSeasonsMeltable(pos);
                 setBlockState(pos, updatedState);
